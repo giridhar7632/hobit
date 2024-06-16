@@ -1,7 +1,7 @@
 import React from 'react'
 import { Stack } from 'expo-router'
 
-export default async function AuthLayout() {
+export default function AuthLayout() {
 	return (
 		<>
 			<Stack>
@@ -13,6 +13,18 @@ export default async function AuthLayout() {
 				/>
 				<Stack.Screen
 					name='sign-up'
+					options={{
+						headerShown: false,
+					}}
+				/>
+				<Stack.Screen
+					name='forgot-password'
+					options={{
+						headerShown: false,
+					}}
+				/>
+				<Stack.Screen
+					name='reset-password'
 					options={{
 						headerShown: false,
 					}}

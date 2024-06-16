@@ -1,72 +1,78 @@
+import { Image, ScrollView, useColorScheme } from 'react-native'
 import { ThemedText } from '@/components/ui/ThemedText'
 import { ThemedView } from '@/components/ui/ThemedView'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { Controller, useForm } from 'react-hook-form'
-import { Button, StyleSheet, TextInput, View } from 'react-native'
-import Constants from 'expo-constants'
+import { Alert, View } from 'react-native'
+import { colors } from '@/constants/Colors'
+import Button from '@/components/ui/Button'
+import logo from '@/assets/images/logo.png'
+import { User } from '@/utils/types'
+import { supabase } from '@/utils/supabase'
+import FormInput from '@/components/ui/FormInput'
+import { Link } from 'expo-router'
 
-export default function TrackScreen() {
+export default function SignIn() {
+	const colorScheme = useColorScheme()
 	const {
 		control,
 		handleSubmit,
-		formState: { errors },
+		formState: { errors, isLoading },
 	} = useForm({
 		defaultValues: {
 			email: '',
 		},
 	})
-	const onSubmit = (data: any) => {
+	const onSubmit = async (data: any) => {
 		console.log(data)
 	}
 
 	return (
-		<ThemedView style={styles.container}>
-			<ThemedText style={styles.label}>Email</ThemedText>
-			<Controller
-				control={control}
-				render={({ field: { onChange, onBlur, value } }) => (
-					<TextInput
-						style={styles.input}
-						onBlur={onBlur}
-						onChangeText={(value) => onChange(value)}
-						value={value}
+		<SafeAreaView
+			style={{ backgroundColor: colors[colorScheme ?? 'light'].background }}
+			className='h-full'>
+			<ScrollView contentContainerStyle={{ height: '100%' }}>
+				<ThemedView className='relative flex-1 justify-center items-center'>
+					<Image source={logo} className='h-[80px]' resizeMode='contain' />
+					<ThemedText className='text-3xl font-pbold my-2'>
+						Forgot password!
+					</ThemedText>
+					<ThemedText className='font-pregular'>
+						Enter the email related to your Hobit account
+					</ThemedText>
+					<Controller
+						control={control}
+						render={({ field: { onChange, onBlur, value } }) => (
+							<FormInput
+								label='Email'
+								handleBlur={onBlur}
+								handleChangeText={(value) => onChange(value)}
+								value={value}
+								keyboardType='email-address'
+							/>
+						)}
+						name='email'
+						rules={{ required: true }}
 					/>
-				)}
-				name='email'
-				rules={{ required: true }}
-			/>
 
-			<View style={styles.button}>
-				<Button title='Button' onPress={handleSubmit(onSubmit)} />
-			</View>
-		</ThemedView>
+					<Button
+						containerStyles={'mt-7 px-4 h-16 w-[90%]'}
+						textStyles={'text-xl'}
+						title='Get Password Reset Link'
+						handlePress={handleSubmit(onSubmit)}
+						loading={isLoading}
+					/>
+
+					<View className='justify-center items-center mt-4'>
+						<ThemedText className='font-pregular'>
+							Don't have an account?{' '}
+							<Link className='text-lime-500 font-pmedium' href='/sign-up'>
+								Sign up
+							</Link>
+						</ThemedText>
+					</View>
+				</ThemedView>
+			</ScrollView>
+		</SafeAreaView>
 	)
 }
-
-const styles = StyleSheet.create({
-	label: {
-		color: 'white',
-		margin: 20,
-		marginLeft: 0,
-	},
-	button: {
-		marginTop: 40,
-		color: 'white',
-		height: 40,
-		backgroundColor: '#171717',
-		borderRadius: 4,
-	},
-	container: {
-		flex: 1,
-		justifyContent: 'center',
-		paddingTop: Constants.statusBarHeight,
-		padding: 8,
-		backgroundColor: '#0e101c',
-	},
-	input: {
-		backgroundColor: 'white',
-		borderColor: 'none',
-		height: 40,
-		padding: 10,
-		borderRadius: 4,
-	},
-})

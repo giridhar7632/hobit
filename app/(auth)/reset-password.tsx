@@ -10,7 +10,7 @@ import logo from '@/assets/images/logo.png'
 import { User } from '@/utils/types'
 import { supabase } from '@/utils/supabase'
 import FormInput from '@/components/ui/FormInput'
-import { Link, router } from 'expo-router'
+import { Link } from 'expo-router'
 
 export default function SignIn() {
 	const colorScheme = useColorScheme()
@@ -20,18 +20,11 @@ export default function SignIn() {
 		formState: { errors, isLoading },
 	} = useForm({
 		defaultValues: {
-			email: '',
 			password: '',
 		},
 	})
-	const onSubmit = async (data: User) => {
+	const onSubmit = async (data: any) => {
 		console.log(data)
-		const { error } = await supabase.auth.signInWithPassword({
-			email: data.email,
-			password: data.password,
-		})
-
-		if (error) Alert.alert(error.message)
 	}
 
 	return (
@@ -42,7 +35,7 @@ export default function SignIn() {
 				<ThemedView className='relative flex-1 justify-center items-center'>
 					<Image source={logo} className='h-[80px]' resizeMode='contain' />
 					<ThemedText className='text-3xl font-pbold my-2'>
-						Start Tracking!
+						Reset your password!
 					</ThemedText>
 					<Controller
 						control={control}
@@ -55,20 +48,6 @@ export default function SignIn() {
 								keyboardType='email-address'
 							/>
 						)}
-						name='email'
-						rules={{ required: true }}
-					/>
-					<Controller
-						control={control}
-						render={({ field: { onChange, onBlur, value } }) => (
-							<FormInput
-								label='Password'
-								handleBlur={onBlur}
-								handleChangeText={(value) => onChange(value)}
-								value={value}
-								keyboardType='default'
-							/>
-						)}
 						name='password'
 						rules={{ required: true }}
 					/>
@@ -76,7 +55,7 @@ export default function SignIn() {
 					<Button
 						containerStyles={'mt-7 px-4 h-16 w-[90%]'}
 						textStyles={'text-xl'}
-						title='Sign in'
+						title='Reset Password'
 						handlePress={handleSubmit(onSubmit)}
 						loading={isLoading}
 					/>

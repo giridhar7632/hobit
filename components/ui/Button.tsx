@@ -1,6 +1,11 @@
 import React from 'react'
 import { colors } from '@/constants/Colors'
-import { Text, TouchableOpacity, useColorScheme } from 'react-native'
+import {
+	ActivityIndicator,
+	Pressable,
+	Text,
+	useColorScheme,
+} from 'react-native'
 
 type ButtonProps = {
 	title: string
@@ -19,18 +24,26 @@ export default function Button({
 }: ButtonProps) {
 	const colorScheme = useColorScheme()
 	return (
-		<TouchableOpacity
+		<Pressable
 			onPress={handlePress}
-			activeOpacity={0.7}
 			disabled={loading}
 			style={{ backgroundColor: colors[colorScheme ?? 'light'].tint }}
-			className={`rounded-xl justify-center items-center ${containerStyles} ${
-				loading ? 'opacity-50' : ''
+			className={`rounded-xl flex flex-row items-center justify-center ${containerStyles} ${
+				loading ? 'opacity-80' : ''
 			}`}>
 			<Text
 				className={`text-white py-3 px-6 font-semibold font-psemibold text-lg ${textStyles}`}>
 				{title}
 			</Text>
-		</TouchableOpacity>
+
+			{loading && (
+				<ActivityIndicator
+					animating={loading}
+					color='#fff'
+					size='small'
+					className='ml-2'
+				/>
+			)}
+		</Pressable>
 	)
 }

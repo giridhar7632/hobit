@@ -9,7 +9,6 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useColorScheme } from '@/hooks/useColorScheme'
 import { colors } from '@/constants/Colors'
 import Button from '@/components/ui/Button'
-import { StatusBar } from 'expo-status-bar'
 import logo from '../assets/images/logo.png'
 import { router } from 'expo-router'
 
@@ -51,18 +50,14 @@ export default function HomeScreen() {
 					<Button
 						title='Continue with Email'
 						handlePress={() => router.push('/sign-in')}
-						containerStyles={'w-[80%]'}
+						containerStyles={'w-[80%] h-16'}
+						textStyles={'text-xl'}
 					/>
 
 					<Image
 						source={path}
 						className='w-screen absolute -z-10 -bottom-40 left-0 right-0'
 						resizeMode='contain'
-					/>
-
-					<StatusBar
-						backgroundColor={colors[colorScheme ?? 'light'].background}
-						style={colorScheme === 'light' ? 'dark' : 'light'}
 					/>
 				</ThemedView>
 			</ScrollView>
