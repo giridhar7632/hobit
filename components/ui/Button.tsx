@@ -13,6 +13,7 @@ type ButtonProps = {
 	containerStyles?: any
 	textStyles?: any
 	loading?: boolean
+	children?: React.ReactNode
 }
 
 export default function Button({
@@ -21,6 +22,7 @@ export default function Button({
 	containerStyles,
 	textStyles,
 	loading,
+	children,
 }: ButtonProps) {
 	const colorScheme = useColorScheme()
 	return (
@@ -28,11 +30,12 @@ export default function Button({
 			onPress={handlePress}
 			disabled={loading}
 			style={{ backgroundColor: colors[colorScheme ?? 'light'].tint }}
-			className={`rounded-xl flex flex-row items-center justify-center ${containerStyles} ${
+			className={`rounded-xl py-3 px-6 flex flex-row items-center justify-center ${containerStyles} ${
 				loading ? 'opacity-80' : ''
 			}`}>
+			{children}
 			<Text
-				className={`text-white py-3 px-6 font-semibold font-psemibold text-lg ${textStyles}`}>
+				className={`text-white font-semibold font-psemibold text-lg ${textStyles}`}>
 				{title}
 			</Text>
 

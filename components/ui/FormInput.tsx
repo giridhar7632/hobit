@@ -13,9 +13,11 @@ import icons from '@/constants/icons'
 type FormInputProps = {
 	label: string
 	value: string
-	handleChangeText: (text: string) => void
-	handleBlur: () => void
+	handleChangeText?: (text: string) => void
+	handleBlur?: () => void
 	otherStyles?: any
+	error?: any
+	disabled?: boolean
 	keyboardType?: string
 }
 
@@ -26,6 +28,8 @@ export default function FormInput({
 	handleBlur,
 	keyboardType,
 	otherStyles,
+	error,
+	disabled,
 	...rest
 }: FormInputProps) {
 	const colorScheme = useColorScheme()
@@ -47,10 +51,11 @@ export default function FormInput({
 				<TextInput
 					className={`flex-1 caret-lime-500 font-pmedium text-base ${
 						colorScheme === 'light' ? 'text-black' : 'text-white'
-					}`}
+					} ${disabled ? 'opacity-50' : ''} ${otherStyles}`}
 					onBlur={handleBlur}
 					onChangeText={handleChangeText}
 					value={value}
+					editable={!disabled}
 					secureTextEntry={label === 'Password' && !showPassword}
 					{...rest}
 				/>
@@ -64,6 +69,7 @@ export default function FormInput({
 					</Pressable>
 				)}
 			</View>
+			{error && <Text className='text-red-500 text-sm'>{error}</Text>}
 		</View>
 	)
 }

@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Platform, ScrollView } from 'react-native'
+import { Image, Platform, ScrollView } from 'react-native'
 
 import { ThemedText } from '@/components/ui/ThemedText'
 import { ThemedView } from '@/components/ui/ThemedView'
@@ -10,7 +10,9 @@ import { useColorScheme } from '@/hooks/useColorScheme'
 import { colors } from '@/constants/Colors'
 import Button from '@/components/ui/Button'
 import logo from '../assets/images/logo.png'
-import { router } from 'expo-router'
+import { Redirect, router } from 'expo-router'
+import * as Linking from 'expo-linking'
+import { createSessionFromUrl } from './(auth)/sign-in'
 
 export default function HomeScreen() {
 	const [session, setSession] = useState<Session | null>(null)
@@ -19,6 +21,7 @@ export default function HomeScreen() {
 		colorScheme === 'light'
 			? require('../assets/images/path-light.png')
 			: require('../assets/images/path-dark.png')
+
 	useEffect(() => {
 		supabase.auth.getSession().then(({ data: { session } }) => {
 			setSession(session)
@@ -28,6 +31,10 @@ export default function HomeScreen() {
 			setSession(session)
 		})
 	}, [])
+
+	if (session && session.user) {
+		return <Redirect href='/habits' />
+	}
 
 	return (
 		<SafeAreaView
@@ -48,7 +55,7 @@ export default function HomeScreen() {
 					</ThemedText>
 
 					<Button
-						title='Continue with Email'
+						title='Sign in to continue'
 						handlePress={() => router.push('/sign-in')}
 						containerStyles={'w-[80%] h-16'}
 						textStyles={'text-xl'}

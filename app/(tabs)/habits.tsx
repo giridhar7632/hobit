@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useColorScheme } from '@/hooks/useColorScheme'
 import { colors } from '@/constants/Colors'
 import Button from '@/components/ui/Button'
+import { router } from 'expo-router'
 
 export default function HomeScreen() {
 	const [session, setSession] = useState<Session | null>(null)
@@ -38,7 +39,10 @@ export default function HomeScreen() {
 					</ThemedText>
 					<Button
 						title='Sign Out'
-						handlePress={() => supabase.auth.signOut()}
+						handlePress={() => {
+							supabase.auth.signOut()
+							router.push('/')
+						}}
 					/>
 				</ThemedView>
 			</ScrollView>

@@ -17,7 +17,7 @@ export default function SignIn() {
 	const {
 		control,
 		handleSubmit,
-		formState: { errors, isLoading },
+		formState: { errors, isSubmitting },
 	} = useForm({
 		defaultValues: {
 			name: '',
@@ -26,10 +26,12 @@ export default function SignIn() {
 		},
 	})
 	const onSubmit = async (data: User) => {
-		console.log(data)
-		const { error } = await supabase.auth.signInWithPassword({
+		const { error } = await supabase.auth.signUp({
 			email: data.email,
-			password: data.password,
+			password: data.password ?? '',
+			options: {
+				emailRedirectTo: 'https://giridhar.pages.dev',
+			},
 		})
 
 		if (error) Alert.alert(error.message)
@@ -47,7 +49,14 @@ export default function SignIn() {
 					</ThemedText>
 
 					<Controller
+						name='email'
 						control={control}
+						rules={{
+							required: {
+								value: true,
+								message: 'Email is required',
+							},
+						}}
 						render={({ field: { onChange, onBlur, value } }) => (
 							<FormInput
 								label='Email'
@@ -55,24 +64,38 @@ export default function SignIn() {
 								handleChangeText={(value) => onChange(value)}
 								value={value}
 								keyboardType='email-address'
+								error={errors.email?.message}
 							/>
 						)}
-						name='email'
-						rules={{ required: true }}
 					/>
 					<Controller
+						name='password'
 						control={control}
+						rules={{
+							required: {
+								value: true,
+								message: 'Email is required',
+							},
+							minLength: {
+								value: 8,
+								message: 'Password must be at least 8 characters',
+							},
+							pattern: {
+								value:
+									/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+								message:
+									'Password must contain at least one letter and one number',
+							},
+						}}
 						render={({ field: { onChange, onBlur, value } }) => (
 							<FormInput
 								label='Password'
 								handleBlur={onBlur}
 								handleChangeText={(value) => onChange(value)}
 								value={value}
-								keyboardType='default'
+								error={errors.password?.message}
 							/>
 						)}
-						name='password'
-						rules={{ required: true }}
 					/>
 
 					<Button
@@ -80,7 +103,7 @@ export default function SignIn() {
 						textStyles={'text-xl'}
 						title='Sign Up'
 						handlePress={handleSubmit(onSubmit)}
-						loading={isLoading}
+						loading={isSubmitting}
 					/>
 
 					<View className='justify-center items-center mt-4'>
