@@ -12,7 +12,7 @@ import { supabase } from '@/utils/supabase'
 import FormInput from '@/components/ui/FormInput'
 import { Link } from 'expo-router'
 
-export default function SignIn() {
+export default function ForgotPassword() {
 	const colorScheme = useColorScheme()
 	const {
 		control,
@@ -56,7 +56,7 @@ export default function SignIn() {
 					/>
 
 					<Button
-						containerStyles={'mt-7 px-4 h-16 w-[90%]'}
+						containerStyles={'mt-7 px-4 h-12 w-[90%]'}
 						textStyles={'text-xl'}
 						title='Get Password Reset Link'
 						handlePress={handleSubmit(onSubmit)}

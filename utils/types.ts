@@ -3,3 +3,11 @@ export interface User {
 	password?: string
 	name?: string
 }
+
+export interface Habit {
+	id?: any
+	name: string
+	description: string
+	planned_time_minutes: string
+	frequency: string
+}

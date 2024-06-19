@@ -43,7 +43,7 @@ export const createSessionFromUrl = async (url: string) => {
 	return data.session
 }
 
-export default function SignIn() {
+export default function SignInScreen() {
 	const colorScheme = useColorScheme()
 	const {
 		control,
@@ -115,6 +115,7 @@ export default function SignIn() {
 								handleBlur={onBlur}
 								handleChangeText={(value) => onChange(value)}
 								value={value}
+								containerStyles={'h-16'}
 								keyboardType='email-address'
 								error={errors.email?.message}
 							/>

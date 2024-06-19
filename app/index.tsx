@@ -30,7 +30,7 @@ export default function HomeScreen() {
 		supabase.auth.onAuthStateChange((_event, session) => {
 			setSession(session)
 		})
-	}, [])
+	}, [session])
 
 	if (session && session.user) {
 		return <Redirect href='/habits' />
