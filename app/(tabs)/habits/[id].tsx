@@ -6,11 +6,12 @@ import {
 	useColorScheme,
 	SafeAreaView,
 	ScrollView,
+	ActivityIndicator,
 } from 'react-native'
-import { useLocalSearchParams } from 'expo-router'
+import { Stack, useLocalSearchParams } from 'expo-router'
 import { Session } from '@supabase/supabase-js'
 import { supabase } from '@/utils/supabase'
-import { Habit } from '@/utils/types'
+import { Habit, HabitEntry } from '@/utils/types'
 import { colors } from '@/constants/Colors'
 import { ThemedView } from '@/components/ui/ThemedView'
 import { ThemedText } from '@/components/ui/ThemedText'
@@ -20,26 +21,24 @@ export default function HabitScreen() {
 	const colorScheme = useColorScheme()
 	const [session, setSession] = useState<Session | null>(null)
 	const [habit, setHabit] = useState<Habit | null>(null)
+	const [activity, setActivity] = useState<HabitEntry[]>([])
 	const [loading, setLoading] = useState(true)
 
 	useEffect(() => {
 		supabase.auth.getSession().then(({ data: { session } }) => {
 			setSession(session)
+			getHabitData(session?.user?.id ?? '')
 		})
 
 		supabase.auth.onAuthStateChange((_event, session) => {
 			setSession(session)
 		})
-
-		if (id) {
-			getHabit()
-		}
 	}, [id])
 
-	async function getHabit() {
+	async function getHabitData(user_id: string) {
 		try {
 			setLoading(true)
-			if (!session?.user) throw new Error('No user on the session!')
+			if (!user_id) throw new Error('No user on the session in habit!')
 
 			const { data, error, status } = await supabase
 				.from('habits')
@@ -53,6 +52,24 @@ export default function HabitScreen() {
 
 			if (data) {
 				setHabit(data)
+				const {
+					data: activityData,
+					error: activityError,
+					status: activityStatus,
+				} = await supabase
+					.from('habit_entries')
+					.select('entry_date, status, actual_time_minutes')
+					.eq('habit_id', id)
+					.order('entry_date', { ascending: false })
+					.limit(5)
+
+				if (activityError && activityStatus !== 406) {
+					throw activityError
+				}
+
+				if (activityData) {
+					setActivity(activityData)
+				}
 			}
 		} catch (error) {
 			if (error instanceof Error) {
@@ -69,10 +86,22 @@ export default function HabitScreen() {
 			className='h-full'>
 			<ScrollView contentContainerStyle={{ height: '100%' }}>
 				<ThemedView className='flex-1 justify-center items-center'>
-					<ThemedText className='text-3xl font-pbold'>{habit?.name}</ThemedText>
-					<ThemedText className='font-pregular'>
-						{habit?.description}
-					</ThemedText>
+					{loading ? (
+						<ActivityIndicator
+							animating={loading}
+							color='#84cc16'
+							size='large'
+						/>
+					) : (
+						<View>
+							<ThemedText className='text-3xl font-pbold'>
+								{habit?.name}
+							</ThemedText>
+							<ThemedText className='font-pregular'>
+								{habit?.description}
+							</ThemedText>
+						</View>
+					)}
 				</ThemedView>
 			</ScrollView>
 		</SafeAreaView>

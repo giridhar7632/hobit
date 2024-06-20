@@ -5,6 +5,7 @@ import {
 	ScrollView,
 	Alert,
 	View,
+	ActivityIndicator,
 } from 'react-native'
 
 import { ThemedText } from '@/components/ui/ThemedText'
@@ -28,27 +29,27 @@ export default function HabitsScreen() {
 	useEffect(() => {
 		supabase.auth.getSession().then(({ data: { session } }) => {
 			setSession(session)
-			getHabits()
+			getHabits(session?.user?.id ?? '')
 		})
 
 		supabase.auth.onAuthStateChange((_event, session) => {
 			setSession(session)
 		})
-	}, [session])
+	}, [])
 
 	// if (!session) {
 	// 	return <Redirect href='/sign-in' />
 	// }
 
-	async function getHabits() {
+	async function getHabits(user_id: string) {
 		try {
 			setLoading(true)
-			if (!session?.user) throw new Error('No user on the session!')
+			if (!user_id) throw new Error('No user on the session in habits!')
 
 			const { data, error, status } = await supabase
 				.from('habits')
-				.select(`id, name, description`)
-				.eq('user_id', session?.user.id)
+				.select(`id, name, frequency, description, planned_time_minutes`)
+				.eq('user_id', user_id)
 
 			if (error && status !== 406) {
 				throw error
@@ -80,16 +81,33 @@ export default function HabitsScreen() {
 						Your habits:
 					</ThemedText>
 					<View className='space-y-2'>
-						{habits.map((habit) => (
-							<ThemedView
-								key={habit.name}
-								className='flex-row items-center justify-between p-3 border border-gray-200 rounded-lg'>
-								<ThemedText className='font-pbold'>{habit.name}</ThemedText>
-								<Link className='text-lime-500' href={`/habits/${habit.id}`}>
-									View
-								</Link>
-							</ThemedView>
-						))}
+						{loading ? (
+							<ActivityIndicator
+								animating={loading}
+								color='#84cc16'
+								size='large'
+							/>
+						) : (
+							habits.map((habit) => (
+								<ThemedView
+									key={habit.name}
+									className='flex-row items-center justify-between p-3 border border-gray-200 rounded-lg'>
+									<ThemedText className='font-pbold'>{habit.name}</ThemedText>
+									<View className='flex flex-row items-center gap-4'>
+										<Link
+											className='text-lime-600'
+											href={`/habits/track?id=${habit.id}&name=${habit.name}&frequency=${habit.frequency}&planned_time=${habit.planned_time_minutes}`}>
+											Track
+										</Link>
+										<Link
+											className='text-lime-600'
+											href={`/habits/${habit.id}`}>
+											View
+										</Link>
+									</View>
+								</ThemedView>
+							))
+						)}
 					</View>
 				</ThemedView>
 			</ScrollView>

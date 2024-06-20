@@ -11,3 +11,11 @@ export interface Habit {
 	planned_time_minutes: string
 	frequency: string
 }
+
+export interface HabitEntry {
+	id?: any
+	habit_id?: any
+	entry_date?: string
+	status?: string
+	actual_time_minutes?: string
+}
