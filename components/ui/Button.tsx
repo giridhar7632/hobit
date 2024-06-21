@@ -24,13 +24,11 @@ export default function Button({
 	loading,
 	children,
 }: ButtonProps) {
-	const colorScheme = useColorScheme()
 	return (
 		<Pressable
 			onPress={handlePress}
 			disabled={loading}
-			style={{ backgroundColor: colors[colorScheme ?? 'light'].tint }}
-			className={`rounded-xl py-3 px-6 flex flex-row items-center justify-center ${containerStyles} ${
+			className={`rounded-xl py-3 px-6 flex flex-row items-center justify-center bg-lime-500 ${containerStyles} ${
 				loading ? 'opacity-80' : ''
 			}`}>
 			{children}

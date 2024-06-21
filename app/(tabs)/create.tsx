@@ -6,8 +6,10 @@ import FormInput from '@/components/ui/FormInput'
 import { Picker } from '@react-native-picker/picker'
 import {
 	Alert,
+	Platform,
 	SafeAreaView,
 	ScrollView,
+	Switch,
 	Text,
 	View,
 	useColorScheme,
@@ -18,14 +20,20 @@ import { Habit } from '@/utils/types'
 import { supabase } from '@/utils/supabase'
 import { Session } from '@supabase/supabase-js'
 import { Redirect, router } from 'expo-router'
+import DateTimePicker, {
+	DateTimePickerAndroid,
+} from '@react-native-community/datetimepicker'
 
 export default function CreateScreen() {
 	const [session, setSession] = useState<Session | null>(null)
+	const [showTimePicker, setShowTimePicker] = useState(false)
 	const colorScheme = useColorScheme()
 	const {
 		control,
 		handleSubmit,
 		reset,
+		getValues,
+		setValue,
 		formState: { errors, isSubmitting },
 	} = useForm({
 		defaultValues: {
@@ -33,6 +41,8 @@ export default function CreateScreen() {
 			description: '',
 			planned_time_minutes: '',
 			frequency: 'daily',
+			notify: false,
+			notify_time: new Date(),
 		},
 	})
 
@@ -78,8 +88,8 @@ export default function CreateScreen() {
 		<SafeAreaView
 			style={{ backgroundColor: colors[colorScheme ?? 'light'].background }}
 			className='h-full'>
-			<ScrollView contentContainerStyle={{ height: '100%' }}>
-				<ThemedView className='flex-1 flex-col space-y-2 gap-2 p-3 mt-10'>
+			<ScrollView>
+				<ThemedView className='flex-1 flex-col space-y-2 gap-2 p-3 mt-10 pb-20'>
 					<ThemedText className='text-3xl font-pbold'>Create Habit</ThemedText>
 
 					<Controller
@@ -155,6 +165,77 @@ export default function CreateScreen() {
 						)}
 					/>
 
+					<View className='flex flex-row p-4 items-center'>
+						<Text
+							style={{ color: colors[colorScheme ?? 'light'].tabIconDefault }}
+							className='text-base mr-4'>
+							Enable Notifications
+						</Text>
+						<Controller
+							control={control}
+							name='notify'
+							render={({ field: { onChange, value } }) => (
+								<Switch
+									value={value}
+									trackColor={{ true: '#84cc16', false: '#ccc' }}
+									onValueChange={(value) => onChange(value)}
+								/>
+							)}
+						/>
+					</View>
+
+					{getValues('notify') && (
+						<View className='flex px-4'>
+							<Text
+								style={{ color: colors[colorScheme ?? 'light'].tabIconDefault }}
+								className='text-base'>
+								Notification Time
+							</Text>
+							<View className='flex flex-row gap-4 items-center p-4'>
+								<Button
+									title={'8 AM'}
+									containerStyles={`mt-4 mr-4 ${
+										!showTimePicker
+											? ''
+											: 'bg-transparent border border-lime-500'
+									}`}
+									textStyles={!showTimePicker ? '' : 'text-lime-500'}
+									handlePress={() => {
+										setValue(
+											'notify_time',
+											new Date(new Date().setHours(8, 0, 0, 0))
+										)
+									}}
+								/>
+								<Button
+									title='Pick time'
+									containerStyles={`mt-4 ${
+										showTimePicker
+											? ''
+											: 'bg-transparent border border-lime-500'
+									}`}
+									textStyles={showTimePicker ? '' : 'text-lime-500'}
+									handlePress={() => setShowTimePicker(true)}
+								/>
+
+								{showTimePicker && (
+									<Controller
+										control={control}
+										name='notify_time'
+										render={({ field: { onChange, value } }) => (
+											<DateTimePicker
+												value={new Date(value)}
+												mode='time'
+												is24Hour={true}
+												display='default'
+												onChange={(value) => onChange(value)}
+											/>
+										)}
+									/>
+								)}
+							</View>
+						</View>
+					)}
 					<View className='w-full space-y-2 px-4 mt-5'>
 						<Button
 							title={isSubmitting ? 'Creating...' : 'Create Habit'}
