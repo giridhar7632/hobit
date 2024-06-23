@@ -28,7 +28,7 @@ export default function Button({
 		<Pressable
 			onPress={handlePress}
 			disabled={loading}
-			className={`rounded-xl py-3 px-6 flex flex-row items-center justify-center bg-lime-500 ${containerStyles} ${
+			className={`rounded-xl h-16 py-3 px-6 flex flex-row items-center justify-center bg-lime-500 ${containerStyles} ${
 				loading ? 'opacity-80' : ''
 			}`}>
 			{children}

@@ -11,7 +11,7 @@ export interface Habit {
 	planned_time_minutes: string
 	frequency: string
 	notify?: boolean
-	notify_time?: Date
+	notify_time?: string
 }
 
 export interface HabitEntry {

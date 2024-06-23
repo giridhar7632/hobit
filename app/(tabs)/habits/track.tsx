@@ -1,23 +1,23 @@
+import React from 'react'
 import Button from '@/components/ui/Button'
 import FormInput from '@/components/ui/FormInput'
 import { ThemedView } from '@/components/ui/ThemedView'
 import { colors } from '@/constants/Colors'
-import { supabase } from '@/utils/supabase'
+import { trackHabit } from '@/utils/actions'
 import { Picker } from '@react-native-picker/picker'
-import { Link, router, useLocalSearchParams } from 'expo-router'
-import React from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { router, useLocalSearchParams } from 'expo-router'
 import { Controller, useForm } from 'react-hook-form'
 import { View, Text, useColorScheme, Alert } from 'react-native'
 
 export default function TrackScreen() {
 	const colorScheme = useColorScheme()
 	const { id, name, planned_time, frequency, to } = useLocalSearchParams()
-	const isPresented = router.canGoBack()
 	const {
 		control,
 		handleSubmit,
 		reset,
-		formState: { errors, isSubmitting },
+		formState: { errors },
 	} = useForm({
 		defaultValues: {
 			status: 'Completed',
@@ -25,29 +25,26 @@ export default function TrackScreen() {
 		},
 	})
 
-	const trackHabit = async (formData: any) => {
-		try {
-			const { error } = await supabase.from('habit_entries').insert([
-				{
-					habit_id: id,
-					...formData,
-					entry_date: new Date(),
-				},
-			])
+	const queryClient = useQueryClient()
+	const mutation = useMutation({
+		mutationFn: trackHabit,
+		onSuccess: () => {
+			reset()
+			queryClient.invalidateQueries({ queryKey: ['habit_entries', id] })
+			router.push(`../`)
+		},
+		onError: (error) => {
+			console.error('Error tracking habit:', error)
+			Alert.alert('Error tracking habit:', error.message)
+		},
+	})
 
-			if (error) {
-				console.error('Error adding habit entry:', error)
-				throw error
-			} else {
-				reset()
-				router.push(`../`)
-			}
-		} catch (error) {
-			if (error instanceof Error) {
-				Alert.alert(error.message)
-			}
-		}
-	}
+	const onTrackHabit = async (formData: any) =>
+		mutation.mutate({
+			habit_id: id,
+			...formData,
+			entry_date: new Date(),
+		})
 
 	return (
 		<ThemedView className='h-full'>
@@ -107,9 +104,9 @@ export default function TrackScreen() {
 				<View className='flex gap-4 px-4'>
 					<Button
 						containerStyles={'mt-10'}
-						title={isSubmitting ? 'Adding...' : 'Track Habit'}
-						handlePress={handleSubmit(trackHabit)}
-						loading={isSubmitting}
+						title={mutation.isPending ? 'Adding...' : 'Track Habit'}
+						handlePress={handleSubmit(onTrackHabit)}
+						loading={mutation.isPending}
 					/>
 
 					<Button

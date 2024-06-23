@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { ThemedText } from '@/components/ui/ThemedText'
 import { ThemedView } from '@/components/ui/ThemedView'
 import { Controller, useForm } from 'react-hook-form'
@@ -6,7 +6,6 @@ import FormInput from '@/components/ui/FormInput'
 import { Picker } from '@react-native-picker/picker'
 import {
 	Alert,
-	Platform,
 	SafeAreaView,
 	ScrollView,
 	Switch,
@@ -17,24 +16,21 @@ import {
 import Button from '@/components/ui/Button'
 import { colors } from '@/constants/Colors'
 import { Habit } from '@/utils/types'
-import { supabase } from '@/utils/supabase'
-import { Session } from '@supabase/supabase-js'
-import { Redirect, router } from 'expo-router'
-import DateTimePicker, {
-	DateTimePickerAndroid,
-} from '@react-native-community/datetimepicker'
+import { router } from 'expo-router'
+import DateTimePicker from '@react-native-community/datetimepicker'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { createHabit } from '@/utils/actions'
 
 export default function CreateScreen() {
-	const [session, setSession] = useState<Session | null>(null)
 	const [showTimePicker, setShowTimePicker] = useState(false)
+	const [notify, setNotify] = useState(false)
+	const [notify_time, setNotifyTime] = useState(new Date())
 	const colorScheme = useColorScheme()
 	const {
 		control,
 		handleSubmit,
 		reset,
-		getValues,
-		setValue,
-		formState: { errors, isSubmitting },
+		formState: { errors },
 	} = useForm({
 		defaultValues: {
 			name: '',
@@ -42,46 +38,34 @@ export default function CreateScreen() {
 			planned_time_minutes: '',
 			frequency: 'daily',
 			notify: false,
-			notify_time: new Date(),
+		},
+	})
+	const queryClient = useQueryClient()
+	const mutation = useMutation({
+		mutationFn: createHabit,
+		onSuccess: (data) => {
+			reset()
+			queryClient.invalidateQueries({ queryKey: ['habits'] })
+			router.push(
+				`/habits/${data.id}?name=${data.name}&description=${data.description}&frequency=${data.frequency}&planned_time=${data.planned_time_minutes}&notify=${data.notify}`
+			)
+		},
+		onError: (error) => {
+			console.error('Error creating habit:', error)
+			Alert.alert('Error creating habit:', error.message)
 		},
 	})
 
-	useEffect(() => {
-		supabase.auth.getSession().then(({ data: { session } }) => {
-			setSession(session)
+	const onCreateTodo = async (formData: Habit) =>
+		mutation.mutate({
+			...formData,
+			notify_time: formData.notify ? notify_time : null,
+			start_date: new Date(),
 		})
 
-		supabase.auth.onAuthStateChange((_event, session) => {
-			setSession(session)
-		})
-	}, [session])
-
-	// if (!session) {
-	// 	return <Redirect href='/sign-in' />
-	// }
-
-	const createHabit = async (data: Habit) => {
-		try {
-			if (!session?.user) throw new Error('No user on the session!')
-			const { error } = await supabase.from('habits').insert([
-				{
-					...data,
-					start_date: new Date(),
-					user_id: session?.user?.id,
-				},
-			])
-
-			if (error) {
-				throw error
-			} else {
-				reset()
-				router.push('/habits')
-			}
-		} catch (error) {
-			if (error instanceof Error) {
-				Alert.alert(error.message)
-			}
-		}
+	const handleTimeChange = (event: any, selectedDate: any) => {
+		const currentDate = selectedDate
+		setNotifyTime(currentDate)
 	}
 
 	return (
@@ -178,13 +162,16 @@ export default function CreateScreen() {
 								<Switch
 									value={value}
 									trackColor={{ true: '#84cc16', false: '#ccc' }}
-									onValueChange={(value) => onChange(value)}
+									onValueChange={(value) => {
+										onChange(value)
+										setNotify(value)
+									}}
 								/>
 							)}
 						/>
 					</View>
 
-					{getValues('notify') && (
+					{notify && (
 						<View className='flex px-4'>
 							<Text
 								style={{ color: colors[colorScheme ?? 'light'].tabIconDefault }}
@@ -201,15 +188,12 @@ export default function CreateScreen() {
 									}`}
 									textStyles={!showTimePicker ? '' : 'text-lime-500'}
 									handlePress={() => {
-										setValue(
-											'notify_time',
-											new Date(new Date().setHours(8, 0, 0, 0))
-										)
+										setNotifyTime(new Date(new Date().setHours(8, 0, 0, 0)))
 									}}
 								/>
 								<Button
 									title='Pick time'
-									containerStyles={`mt-4 ${
+									containerStyles={`mt-4 -mr-4 ${
 										showTimePicker
 											? ''
 											: 'bg-transparent border border-lime-500'
@@ -219,18 +203,12 @@ export default function CreateScreen() {
 								/>
 
 								{showTimePicker && (
-									<Controller
-										control={control}
-										name='notify_time'
-										render={({ field: { onChange, value } }) => (
-											<DateTimePicker
-												value={new Date(value)}
-												mode='time'
-												is24Hour={true}
-												display='default'
-												onChange={(value) => onChange(value)}
-											/>
-										)}
+									<DateTimePicker
+										value={notify_time}
+										mode='time'
+										is24Hour={true}
+										display='default'
+										onChange={handleTimeChange}
 									/>
 								)}
 							</View>
@@ -238,9 +216,9 @@ export default function CreateScreen() {
 					)}
 					<View className='w-full space-y-2 px-4 mt-5'>
 						<Button
-							title={isSubmitting ? 'Creating...' : 'Create Habit'}
-							handlePress={handleSubmit(createHabit)}
-							loading={isSubmitting}
+							title={mutation.isPending ? 'Creating...' : 'Create Habit'}
+							handlePress={handleSubmit(onCreateTodo)}
+							loading={mutation.isPending}
 						/>
 					</View>
 				</ThemedView>
