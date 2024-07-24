@@ -24,13 +24,22 @@ export default function HomeScreen() {
 
 	useEffect(() => {
 		supabase.auth.getSession().then(({ data: { session } }) => {
+			// console.log('index session: ', session?.access_token)
 			setSession(session)
 		})
 
 		supabase.auth.onAuthStateChange((_event, session) => {
+			// console.log('auth state change session: ', session?.access_token)
 			setSession(session)
 		})
 	}, [session])
+
+	const url = Linking.useURL()
+	if (url)
+		createSessionFromUrl(url).then((res) => {
+			console.log('url session: ', session?.access_token)
+			res && setSession(res)
+		})
 
 	if (session && session.user) {
 		return <Redirect href='/habits' />

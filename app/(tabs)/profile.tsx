@@ -22,6 +22,7 @@ export default function ProfileScreen() {
 	} = useQuery({
 		queryKey: ['profile'],
 		queryFn: async () => {
+			console.log('querying profile')
 			const data = await getProfile()
 			setUsername(data.username)
 			setWebsite(data.website)

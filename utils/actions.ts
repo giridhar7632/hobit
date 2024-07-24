@@ -1,3 +1,4 @@
+import { generateChartData } from './generateData'
 import { supabase } from './supabase'
 import { Habit } from './types'
 
@@ -59,6 +60,31 @@ export async function getHabitActivity(habitId: string) {
 	}
 
 	return activityData
+}
+
+export async function getHabitActivitySummary(habitId: string) {
+	const user_id = await getSessionId()
+	if (!user_id) throw new Error('No user on the session in habits!')
+
+	const {
+		data: activityData,
+		error: activityError,
+		status: activityStatus,
+	} = await supabase
+		.from('habit_entries_summary')
+		.select('entry_date, total_time_minutes')
+		.eq('habit_id', habitId)
+		.order('entry_date', { ascending: false })
+
+	if (activityError && activityStatus !== 406) {
+		throw activityError
+	}
+
+	// return activityData?.map((d: any) => ({
+	// 	date: d.entry_date,
+	// 	count: d.total_time_minutes + Math.random() * 100,
+	// }))
+	return generateChartData(activityData)
 }
 
 export async function createHabit(formData: any) {

@@ -16,7 +16,12 @@ import Button from '@/components/ui/Button'
 import { formatRelative } from 'date-fns'
 import icons from '@/constants/icons'
 import { useQuery } from '@tanstack/react-query'
-import { getHabitActivity } from '@/utils/actions'
+import { getHabitActivity, getHabitActivitySummary } from '@/utils/actions'
+import { Heatmap } from '@/components/HeatMap'
+import { data } from '@/scripts/data'
+import { generateChartData } from '@/utils/generateData'
+import { CalendarHeatmap } from '@/components/HeatMap/Calendar'
+import { ContributionGraph } from 'react-native-chart-kit'
 
 export default function HabitScreen() {
 	const { id, name, description, frequency, planned_time, notify } =
@@ -32,6 +37,13 @@ export default function HabitScreen() {
 		queryKey: ['habit_entries', id],
 		queryFn: () => getHabitActivity(id?.toString() ?? ''),
 	})
+
+	const { data: activitySummary, isLoading: isLoadingSummary } = useQuery({
+		queryKey: ['habit_summary', id],
+		queryFn: () => getHabitActivitySummary(id?.toString() ?? ''),
+	})
+
+	const handleToolTip: any = {}
 
 	return (
 		<SafeAreaView
@@ -63,6 +75,32 @@ export default function HabitScreen() {
 								<Text className='text-lime-500'>{planned_time}</Text> minutes.
 							</ThemedText>
 						</View>
+						<ScrollView className='max-h-96 w-96'>
+							{isLoadingSummary ? (
+								<ActivityIndicator />
+							) : (
+								// <Heatmap data={activitySummary} width={420} height={200} />
+								<ContributionGraph
+									values={activitySummary}
+									endDate={new Date(activitySummary[0]?.date)}
+									numDays={105}
+									width={500}
+									height={220}
+									gutterSize={2}
+									tooltipDataAttrs={({ value }) => handleToolTip}
+									chartConfig={{
+										backgroundColor: '#fff',
+										backgroundGradientFrom: '#fff',
+										backgroundGradientTo: '#fff',
+										color: (opacity = 1) => `rgba(132, 204, 22, ${opacity})`,
+										labelColor: (opacity = 1) => `rgb(101, 163, 13)`,
+										style: {
+											borderRadius: 16,
+										},
+									}}
+								/>
+							)}
+						</ScrollView>
 						<View className='flex flex-col space-y-2 px-4'>
 							<View className='flex flex-row items-center justify-between mb-4'>
 								<ThemedText className='text-xl font-pbold'>
