@@ -23,6 +23,11 @@ export default function HomeScreen() {
 			: require('../assets/images/path-dark.png')
 
 	useEffect(() => {
+		console.log({
+			gemini_key: process.env.GEMINI_API_KEY,
+			openapi_key: process.env.OPEN_AI_API_KEY,
+			db: process.env.EXPO_PUBLIC_SUPABASE_PUBLIC_URL,
+		})
 		supabase.auth.getSession().then(({ data: { session } }) => {
 			// console.log('index session: ', session?.access_token)
 			setSession(session)
@@ -37,8 +42,9 @@ export default function HomeScreen() {
 	const url = Linking.useURL()
 	if (url)
 		createSessionFromUrl(url).then((res) => {
-			console.log('url session: ', session?.access_token)
-			res && setSession(res)
+			// res && setSession(res)
+			console.log('redirecting after creating link')
+			router.push('/habits')
 		})
 
 	if (session && session.user) {

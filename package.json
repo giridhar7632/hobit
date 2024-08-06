@@ -17,6 +17,7 @@
   "dependencies": {
     "@expo/metro-runtime": "~3.2.1",
     "@expo/vector-icons": "^14.0.0",
+    "@google/generative-ai": "^0.16.0",
     "@react-native-async-storage/async-storage": "^1.23.1",
     "@react-native-community/datetimepicker": "8.0.1",
     "@react-native-picker/picker": "^2.7.7",
@@ -40,6 +41,7 @@
     "expo-web-browser": "^13.0.3",
     "nativewind": "^2.0.11",
     "openai": "^4.52.0",
+    "openapi": "^1.0.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.51.5",
@@ -47,6 +49,7 @@
     "react-native-chart-kit": "^6.12.0",
     "react-native-gesture-handler": "~2.16.1",
     "react-native-reanimated": "~3.10.1",
+    "react-native-restart": "^0.0.27",
     "react-native-safe-area-context": "4.10.1",
     "react-native-screens": "3.31.1",
     "react-native-svg": "15.2.0",

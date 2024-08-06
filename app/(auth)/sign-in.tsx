@@ -5,6 +5,7 @@ import {
 	Alert,
 	View,
 	Text,
+	DevSettings,
 } from 'react-native'
 import { ThemedText } from '@/components/ui/ThemedText'
 import { ThemedView } from '@/components/ui/ThemedView'
@@ -22,10 +23,10 @@ import * as QueryParams from 'expo-auth-session/build/QueryParams'
 import * as WebBrowser from 'expo-web-browser'
 import * as Linking from 'expo-linking'
 import icons from '@/constants/icons'
+import RNRestart from 'react-native-restart'
 
 WebBrowser.maybeCompleteAuthSession() // required for web only
-export const homeLink = makeRedirectUri()
-console.log('url: ', homeLink)
+const redirectTo = makeRedirectUri()
 
 export const createSessionFromUrl = async (url: string) => {
 	const { params, errorCode } = QueryParams.getQueryParams(url)
@@ -41,6 +42,50 @@ export const createSessionFromUrl = async (url: string) => {
 	})
 	if (error) throw error
 	return data.session
+}
+
+const performOAuth = async () => {
+	const { data, error } = await supabase.auth.signInWithOAuth({
+		provider: 'github',
+		options: {
+			redirectTo,
+			skipBrowserRedirect: true,
+		},
+	})
+	if (error) Alert.alert('Something went wrong!')
+
+	const res = await WebBrowser.openAuthSessionAsync(data?.url ?? '', redirectTo)
+
+	if (res.type === 'success') {
+		const { url } = res
+		await createSessionFromUrl(url)
+		RNRestart.restart()
+		// router.push('/habits')
+	}
+}
+
+const sendMagicLink = async (data: User) => {
+	if (data.email.includes('@hobit.app')) {
+		const { data: res } = await supabase.auth.signInWithPassword({
+			email: 'tester.71a220ff@hobit.app',
+			password: 'RhwPImiOl9AKOVq@',
+		})
+		RNRestart.restart()
+		return //router.push('/habits')
+	}
+
+	const { error } = await supabase.auth.signInWithOtp({
+		email: data.email,
+		options: {
+			emailRedirectTo: redirectTo,
+			shouldCreateUser: true,
+		},
+	})
+
+	if (error) Alert.alert('Something went wrong!')
+	RNRestart.restart()
+	// router.push('/habits')
+	// Email sent.
 }
 
 export default function SignInScreen() {
@@ -59,43 +104,43 @@ export default function SignInScreen() {
 	const url = Linking.useURL()
 	if (url) createSessionFromUrl(url)
 
-	const githubLogin = async () => {
-		const { data, error } = await supabase.auth.signInWithOAuth({
-			provider: 'github',
-			options: {
-				redirectTo: homeLink,
-				skipBrowserRedirect: true,
-			},
-		})
-		if (error) Alert.alert(error.message)
+	// const githubLogin = async () => {
+	// 	const { data, error } = await supabase.auth.signInWithOAuth({
+	// 		provider: 'github',
+	// 		options: {
+	// 			redirectTo: homeLink,
+	// 			skipBrowserRedirect: true,
+	// 		},
+	// 	})
+	// 	if (error) Alert.alert(error.message)
 
-		const res = await WebBrowser.openAuthSessionAsync(data?.url ?? '', homeLink)
+	// 	const res = await WebBrowser.openAuthSessionAsync(data?.url ?? '', homeLink)
 
-		if (res.type === 'success') {
-			const { url } = res
-			await createSessionFromUrl(url)
-			router.push('/habits')
-		}
-	}
+	// 	if (res.type === 'success') {
+	// 		const { url } = res
+	// 		await createSessionFromUrl(url)
+	// 		router.push('/habits')
+	// 	}
+	// }
 
-	const emailLogin = async (data: User) => {
-		if (data.email.includes('@hobit.app')) {
-			const res = await supabase.auth.signInWithPassword({
-				email: 'tester.71a220ff@hobit.app',
-				password: 'RhwPImiOl9AKOVq@',
-			})
-			return router.push('/habits')
-		}
-		const { error } = await supabase.auth.signInWithOtp({
-			email: data.email,
-			options: {
-				shouldCreateUser: true,
-				emailRedirectTo: homeLink,
-			},
-		})
+	// const emailLogin = async (data: User) => {
+	// 	if (data.email.includes('@hobit.app')) {
+	// 		const { data: res } = await supabase.auth.signInWithPassword({
+	// 			email: 'tester.71a220ff@hobit.app',
+	// 			password: 'RhwPImiOl9AKOVq@',
+	// 		})
+	// 		return router.push('/habits')
+	// 	}
+	// 	const { error } = await supabase.auth.signInWithOtp({
+	// 		email: data.email,
+	// 		options: {
+	// 			shouldCreateUser: true,
+	// 			emailRedirectTo: homeLink,
+	// 		},
+	// 	})
 
-		if (error) Alert.alert(error.message)
-	}
+	// 	if (error) Alert.alert(error.message)
+	// }
 
 	return (
 		<SafeAreaView
@@ -152,7 +197,7 @@ export default function SignInScreen() {
 						containerStyles={'my-7 px-4 h-16 w-[90%]'}
 						textStyles={'text-xl'}
 						title='Continue with Email'
-						handlePress={handleSubmit(emailLogin)}
+						handlePress={handleSubmit(sendMagicLink)}
 						loading={isLoading}
 					/>
 
@@ -169,7 +214,7 @@ export default function SignInScreen() {
 						containerStyles={'mt-7 px-4 h-16 w-[90%]'}
 						textStyles={'text-xl'}
 						title='Continue with GitHub'
-						handlePress={githubLogin}
+						handlePress={performOAuth}
 						loading={isLoading}>
 						<Image
 							className='mr-3'

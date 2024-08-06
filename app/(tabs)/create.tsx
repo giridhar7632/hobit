@@ -20,6 +20,7 @@ import { router } from 'expo-router'
 import DateTimePicker from '@react-native-community/datetimepicker'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createHabit } from '@/utils/actions'
+import { getBasePoints } from '@/utils/points'
 
 export default function CreateScreen() {
 	const [showTimePicker, setShowTimePicker] = useState(false)
@@ -56,12 +57,25 @@ export default function CreateScreen() {
 		},
 	})
 
-	const onCreateTodo = async (formData: Habit) =>
-		mutation.mutate({
+	const onCreateTodo = async (formData: Habit) => {
+		let points
+		try {
+			console.log(process.env.GEMINI_API_KEY)
+			points = await getBasePoints(
+				formData.name,
+				Number(formData.planned_time_minutes)
+			)
+		} catch (error) {
+			points = 15
+		}
+		console.log({ points })
+		return mutation.mutate({
 			...formData,
+			base_points: points ? points / Number(formData.planned_time_minutes) : 0,
 			notify_time: formData.notify ? notify_time : null,
 			start_date: new Date(),
 		})
+	}
 
 	const handleTimeChange = (event: any, selectedDate: any) => {
 		const currentDate = selectedDate

@@ -60,7 +60,7 @@ export default function HabitsScreen() {
 							) : (
 								habits?.map((habit) => (
 									<ThemedView
-										key={habit.name}
+										key={habit.id}
 										className='flex-row items-center justify-between p-3 border border-gray-200 rounded-lg'>
 										<ThemedText className='font-pbold'>{habit.name}</ThemedText>
 										<View className='flex flex-row items-center gap-4'>
@@ -71,7 +71,7 @@ export default function HabitsScreen() {
 											</Link>
 											<Link
 												className='text-lime-600'
-												href={`/habits/${habit.id}?name=${habit.name}&description=${habit.description}&frequency=${habit.frequency}&planned_time=${habit.planned_time_minutes}&notify=${habit.notify}`}>
+												href={`/habits/${habit.id}?name=${habit.name}&description=${habit.description}&frequency=${habit.frequency}&planned_time=${habit.planned_time_minutes}&notify=${habit.notify}&total_points=${habit.total_points}`}>
 												View
 											</Link>
 										</View>
